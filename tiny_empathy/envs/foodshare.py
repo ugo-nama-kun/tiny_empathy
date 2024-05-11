@@ -14,12 +14,13 @@ from gymnasium.core import RenderFrame
 class FoodShareEnv(gym.Env):
     metadata = {"render_modes": ["human"], "render_fps": 10}
 
-    def __init__(self, render_mode=None, enable_empathy=False, weight_empathy=0.0):
+    def __init__(self, render_mode=None, enable_empathy=False, weight_empathy=0.0, feed_success=1.0):
         self.window_size = 512
 
         # enable or remove empathy channel
         self.enable_empathy = enable_empathy
         self.weight_empathy = weight_empathy
+        self.feed_success_rate = feed_success
 
         # Key parameters
         self.prob_H = 0.95  # target distribution of the energy level (high)
@@ -109,24 +110,22 @@ class FoodShareEnv(gym.Env):
 
         # agent 0 move
         if action == 0:  # possessor took "eat" action
-            self.agent_info[0]["energy"] = 1
+            if self.np_random.uniform() < self.feed_success_rate:
+                self.agent_info[0]["energy"] = 1
 
             # energy update of the partner
             if self.agent_info[1]["energy"] == 1:
                 if self.unwrapped.np_random.random() < self.prob_low_energy:
                     self.agent_info[1]["energy"] = 0
-            else:
-                self.agent_info[1]["energy"] = 0
 
         elif action == 1:  # possessor took "pass" action
-            self.agent_info[1]["energy"] = 1
+            if self.np_random.uniform() < self.feed_success_rate:
+                self.agent_info[1]["energy"] = 1
 
             # energy update of the possessor
             if self.agent_info[0]["energy"] == 1:
                 if self.unwrapped.np_random.random() < self.prob_low_energy:
                     self.agent_info[0]["energy"] = 0
-            else:
-                self.agent_info[0]["energy"] = 0
         else:
             raise ValueError("Invalid action. action", action)
 
