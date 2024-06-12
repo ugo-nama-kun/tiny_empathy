@@ -74,6 +74,7 @@ class TrapEnv(gym.Env):
         self.clock = None
 
         self.steps = 0
+        self.pass_event = False
 
         self.food_pos = np.zeros(2)
         self.agent_info = {
@@ -107,6 +108,7 @@ class TrapEnv(gym.Env):
         Initial implementation: The very simple empathic signals
         """
         self.steps = 0
+        self.pass_event = False
 
         self.food_pos = self.np_random.uniform(low=-0.1, high=0.1, size=2)
 
@@ -130,6 +132,7 @@ class TrapEnv(gym.Env):
         self, actions  # {agent_id: 0~6}
     ):
         self.steps += 1
+        self.pass_event = False
 
         # energy update
         self.prev_energy = np.array([self.agent_info[0]["energy"], self.agent_info[1]["energy"]])
@@ -189,9 +192,11 @@ class TrapEnv(gym.Env):
                         if agent_id == 0 and self.agent_info[1]["have_food"] is False:
                             self.agent_info[0]["have_food"] = False
                             self.agent_info[1]["have_food"] = True
+                            self.pass_event = True
                         if agent_id == 1 and self.agent_info[0]["have_food"] is False:
                             self.agent_info[0]["have_food"] = True
                             self.agent_info[1]["have_food"] = False
+                            self.pass_event = True
 
             else:
                 raise ValueError("Invalid action. action", action)
@@ -359,6 +364,14 @@ class TrapEnv(gym.Env):
                   color=(0, 0, 0),
                   position=(self.agent_info[agent_id]["position"]) * pix_scale + offset,
                   size=12
+                  )
+
+        if self.pass_event:
+            write(canvas,
+                  f"PASS",
+                  color=(0, 1, 1),
+                  position=offset + np.array([self.window_size / 5, self.window_size / 3]),
+                  size=50
                   )
 
         # Draw food
