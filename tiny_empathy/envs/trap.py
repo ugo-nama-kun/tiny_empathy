@@ -14,7 +14,7 @@ from gymnasium.core import RenderFrame
 class TrapEnv(gym.Env):
     metadata = {"render_modes": ["human"], "render_fps": 200}
 
-    def __init__(self, render_mode=None, enable_empathy=False, weight_empathy=0.0):
+    def __init__(self, render_mode=None, enable_empathy=False, weight_empathy=0.0, p_trap=0.0005):
         self.window_size = 512
         self.max_episode_length = 5000
 
@@ -59,7 +59,7 @@ class TrapEnv(gym.Env):
         self.reward_scale = 100.  # reward scale in the homeostatic reward
 
         # environment condition
-        self.p_trap = 0.0005
+        self.p_trap = p_trap
         self.movable_thresh = -0.7
         self.field_area = {"x": (-1, 1), "y": (-1, 1)}
         self.agent_size = 0.2

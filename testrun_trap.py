@@ -4,7 +4,7 @@ import gymnasium as gym
 import tiny_empathy
 from tiny_empathy.wrappers import FoodShareWrapper
 
-env = gym.make(id="tiny_empathy/Trap-v0", render_mode="human", enable_empathy=False)
+env = gym.make(id="tiny_empathy/Trap-v0", render_mode="human", enable_empathy=False, p_trap=0.001)
 
 env.reset()
 
