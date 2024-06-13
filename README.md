@@ -1,5 +1,15 @@
 # tiny_empathy
-A tiny environment for the emergence of empathic behaviors
+A tiny environment package for the emergence of empathic behaviors from the homeostatic principle
+
+#### Food sharing
+![full_empathy](https://github.com/ugo-nama-kun/tiny_empathy/assets/1684732/8a67dcb6-a71d-44df-a93a-54bf6bb1599d)
+
+#### Grid world
+![full_empathy_grid](https://github.com/ugo-nama-kun/tiny_empathy/assets/1684732/eb3c178c-1758-4b2b-ab5c-7d44787a391b)
+
+#### 2D vulnerable agents
+![Jun-13-2024 07-30-39](https://github.com/ugo-nama-kun/tiny_empathy/assets/1684732/9f798e78-95d9-4e18-8de0-e60ed137ad7f)
+
 
 ### install
 ```commandline
