@@ -9,7 +9,7 @@ register(
 register(
     id="tiny_empathy/FoodShare-v0",
     entry_point="tiny_empathy.envs:FoodShareEnv",
-    max_episode_steps=1000,
+    max_episode_steps=2000,
 )
 
 register(
