@@ -14,8 +14,16 @@ from gymnasium.core import RenderFrame
 class FoodShareEnv(gym.Env):
     metadata = {"render_modes": ["human"], "render_fps": 10}
 
-    def __init__(self, render_mode=None, enable_empathy=False, weight_empathy=0.0, feed_success=1.0):
+    def __init__(self,
+                 emotional_feature=False,
+                 render_mode=None,
+                 enable_empathy=False,
+                 weight_empathy=0.0,
+                 feed_success=1.0):
         self.window_size = 512
+
+        # enable or remove emotional expression feature
+        self.emotional_feature = emotional_feature
 
         # enable or remove empathy channel
         self.enable_empathy = enable_empathy
