@@ -42,14 +42,21 @@ class TrapEnvPZ(ParallelEnv):
         'render.modes': ['human', 'rgb_array'],
         'video.frames_per_second': 200
     }
-    def __init__(self, render_mode=None, enable_empathy=False, weight_empathy=0.0, p_trap=0.0005):
+    def __init__(
+            self,
+            render_mode=None,
+            cognitive_empathy=False,
+            weight_affective_empathy=0.0,
+
+            p_trap=0.0005
+    ):
         self.window_size = 512
         agents_index = [0, 1]
         self.possible_agents = self.possible_agents = [f"agent{i}" for i in agents_index]
 
         # enable or remove empathy channel
-        self.enable_empathy = enable_empathy
-        self.weight_empathy = weight_empathy
+        self.cognitive_empathy = cognitive_empathy
+        self.weight_affective_empathy = weight_affective_empathy
 
         # for tentative pettingzoo compatibility
         self.observation_spaces = {
@@ -97,7 +104,7 @@ class TrapEnvPZ(ParallelEnv):
 
     @functools.lru_cache(maxsize=None)
     def observation_space(self, agent):
-        obs_dim = 10 if self.enable_empathy else 9
+        obs_dim = 10 if self.cognitive_empathy else 9
         # "energy": spaces.Box(-1, 1),  1 dim
         # "position": spaces.Box(-1, 1, shape=(2,)),  2 dim (vector from agent to target)
         # "food_pos": spaces.Box(-1, 1, shape=(2,)),  2 dim (vector from agent to target)
@@ -255,7 +262,7 @@ class TrapEnvPZ(ParallelEnv):
     def get_obs(self):
         obss = dict()
         agent0, agent1 = self.possible_agents
-        if self.enable_empathy:
+        if self.cognitive_empathy:
             obss[agent0] = np.concatenate([
                 np.array([self.agent_info[agent0]["energy"]]),
                 self.agent_info[agent0]["position"],
@@ -275,7 +282,7 @@ class TrapEnvPZ(ParallelEnv):
                 # np.float32(np.arange(2) == int(self.agent_info[agent_id]["is_movable"])),
             ])
 
-        if self.enable_empathy:
+        if self.cognitive_empathy:
             obss[agent1] = np.concatenate([
                 np.array([self.agent_info[agent1]["energy"]]),
                 self.agent_info[agent1]["position"],
@@ -311,20 +318,20 @@ class TrapEnvPZ(ParallelEnv):
 
         # agent 0
         prev_drive = self.prev_energy[0] ** 2
-        prev_drive += self.weight_empathy * self.prev_energy[1] ** 2  # empathic term
+        prev_drive += self.weight_affective_empathy * self.prev_energy[1] ** 2  # empathic term
 
         drive_now = energy_now[0] ** 2
-        drive_now += self.weight_empathy * energy_now[1] ** 2  # empathic reward term
+        drive_now += self.weight_affective_empathy * energy_now[1] ** 2  # empathic reward term
 
         reward0 = self.reward_scale * (prev_drive - drive_now)
         rewards[self.possible_agents[0]] = reward0
 
         # agent 1
         prev_drive = self.prev_energy[1] ** 2
-        prev_drive += self.weight_empathy * self.prev_energy[0] ** 2  # empathic reward term
+        prev_drive += self.weight_affective_empathy * self.prev_energy[0] ** 2  # empathic reward term
 
         drive_now = energy_now[1] ** 2
-        drive_now += self.weight_empathy * energy_now[0] ** 2  # empathic reward term
+        drive_now += self.weight_affective_empathy * energy_now[0] ** 2  # empathic reward term
 
         reward1 = self.reward_scale * (prev_drive - drive_now)
         rewards[self.possible_agents[1]] = reward1
