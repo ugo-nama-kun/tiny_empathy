@@ -60,8 +60,8 @@ class DoubleFoodShareEnvPZ(ParallelEnv):
 
         # Key parameters
         self.switch_prob = switch_prob # owner switch prob.
-        self.default_energy_loss = 0.001  # default energy loss
-        self.food_intake = 0.3  # intake of energy when food is consumed
+        self.default_energy_loss = 0.003  # default energy loss
+        self.food_intake = 0.1  # intake of energy when food is consumed
         self.reward_scale = 100.  # reward scale in the homeostatic reward
 
         # environment condition
@@ -72,7 +72,7 @@ class DoubleFoodShareEnvPZ(ParallelEnv):
         self.window = None
         self.clock = None
 
-        self.max_episode_length = 5000
+        self.max_episode_length = 3000
         self._step = 0
 
         self.food_owner = np.random.randint(2)  # who-has-food
@@ -143,12 +143,7 @@ class DoubleFoodShareEnvPZ(ParallelEnv):
             self.food_owner = 0 if self.food_owner == 1 else 1
         for i, agent_id in enumerate(self.possible_agents):
             have_food = i == self.food_owner
-            self.set_agent_info(
-                id_=agent_id,
-                energy=np.random.uniform(-0.2, 0.2),
-                have_food=have_food,
-            )
-
+            self.agent_info[agent_id]["have_food"] = have_food
 
     def step(
         self, actions  # {agent_id: 0~6}
