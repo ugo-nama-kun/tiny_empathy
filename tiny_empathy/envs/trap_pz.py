@@ -47,7 +47,6 @@ class TrapEnvPZ(ParallelEnv):
             render_mode=None,
             cognitive_empathy=False,
             weight_affective_empathy=0.0,
-
             p_trap=0.0005
     ):
         self.window_size = 512
