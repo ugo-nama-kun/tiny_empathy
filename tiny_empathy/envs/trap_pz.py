@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import functools
-from copy import copy
+from copy import copy, deepcopy
 from typing import Any, SupportsFloat
 
 import numpy as np
@@ -250,9 +250,6 @@ class TrapEnvPZ(ParallelEnv):
         observations = self.get_obs()
         infos = self.get_infos()
 
-        if self.render_mode == "human":
-            self._render_frame()
-
         return observations, rewards, dones, truncateds, infos
 
     def get_obs(self):
@@ -301,7 +298,7 @@ class TrapEnvPZ(ParallelEnv):
         return obss
 
     def get_infos(self):
-        info = self.agent_info.copy()
+        info = deepcopy(self.agent_info)
         info["steps"] = self._step
         return info
 
