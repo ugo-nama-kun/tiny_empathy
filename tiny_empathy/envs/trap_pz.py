@@ -242,7 +242,7 @@ class TrapEnvPZ(ParallelEnv):
         if self.max_episode_length <= self._step:
             done = True
 
-        dones = {done for a in self.possible_agents}
+        dones = {a: done for a in self.possible_agents}
 
         truncateds = {a: False for a in self.possible_agents}
 
