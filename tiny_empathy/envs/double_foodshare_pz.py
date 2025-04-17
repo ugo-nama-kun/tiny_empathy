@@ -171,9 +171,10 @@ class DoubleFoodShareEnvPZ(ParallelEnv):
                 is_food_eaten = True
 
         elif action0 == AgentActions.give_and_take:  # take dynamics: transfer food
-            if self.agent_info[agent1]["have_food"] is True and action1 is AgentActions.give_and_take:
+            if self.agent_info[agent1]["have_food"] is True and action1 == AgentActions.give_and_take:
                 self.agent_info[agent0]["have_food"] = True
                 self.agent_info[agent1]["have_food"] = False
+                print("food transfer: 1 --> 0")
 
         # agent 1 update
         if action1 == AgentActions.eat:  # consume food if the agent "has food"
@@ -182,9 +183,10 @@ class DoubleFoodShareEnvPZ(ParallelEnv):
                 is_food_eaten = True
 
         elif action1 == AgentActions.give_and_take:   # take dynamics: transfer food
-            if self.agent_info[agent0]["have_food"] is True and action0 is AgentActions.give_and_take:
+            if self.agent_info[agent0]["have_food"] is True and action0 == AgentActions.give_and_take:
                 self.agent_info[agent0]["have_food"] = False
                 self.agent_info[agent1]["have_food"] = True
+                print("food transfer: 0 --> 1")
 
         if is_food_eaten:
             self.generate_new_food()
