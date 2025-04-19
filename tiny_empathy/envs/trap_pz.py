@@ -152,7 +152,7 @@ class TrapEnvPZ(ParallelEnv):
                 id_=agent_id,
                 energy=np.random.uniform(-0.2, 0.2),
                 have_food=False,
-                position=np.random.uniform(low=-0.1, high=0.1, size=2),
+                position=np.random.uniform(low=-1, high=1, size=2),
                 is_movable=True,
             )
 
@@ -222,16 +222,20 @@ class TrapEnvPZ(ParallelEnv):
 
             elif action == AgentActions.pass_:  # pass food if the agent "has food" and at rightmost position
                 if self.agent_info[agent_id]["have_food"] is True:
-                    agent_distance = np.linalg.norm(self.agent_info[self.possible_agents[0]]["position"] - self.agent_info[self.possible_agents[1]]["position"])
+                    agent_id0 = self.possible_agents[0]
+                    agent_id1 = self.possible_agents[1]
+                    pos0 = self.agent_info[agent_id0]["position"]
+                    pos1 = self.agent_info[agent_id1]["position"]
+                    agent_distance = np.linalg.norm(pos0 - pos1)
                     if agent_distance < 2 * self.agent_size:
                         # food pass only if other agent doesn't have food
-                        if agent_id == 0 and self.agent_info[1]["have_food"] is False:
-                            self.agent_info[0]["have_food"] = False
-                            self.agent_info[1]["have_food"] = True
+                        if agent_id == agent_id0 and self.agent_info[agent_id1]["have_food"] is False:
+                            self.agent_info[agent_id0]["have_food"] = False
+                            self.agent_info[agent_id1]["have_food"] = True
                             self.pass_event = True
-                        if agent_id == 1 and self.agent_info[0]["have_food"] is False:
-                            self.agent_info[0]["have_food"] = True
-                            self.agent_info[1]["have_food"] = False
+                        if agent_id == agent_id1 and self.agent_info[agent_id0]["have_food"] is False:
+                            self.agent_info[agent_id0]["have_food"] = True
+                            self.agent_info[agent_id1]["have_food"] = False
                             self.pass_event = True
 
             else:
@@ -244,13 +248,13 @@ class TrapEnvPZ(ParallelEnv):
                 self.agent_info[agent_id]["is_movable"] = True
 
         # terminate if any one of agents is dead
-        done = any([self.agent_info[a]["energy"] < -1 for a in self.possible_agents])
+        done = any([self.agent_info[agent_id]["energy"] < -1 for agent_id in self.possible_agents])
+
         if self.max_episode_length <= self._step:
             done = True
 
-        dones = {a: done for a in self.possible_agents}
-
-        truncateds = {a: False for a in self.possible_agents}
+        dones = {agent_id: done for agent_id in self.possible_agents}
+        truncateds = dones.copy()
 
         rewards = self.get_reward()
         observations = self.get_obs()
