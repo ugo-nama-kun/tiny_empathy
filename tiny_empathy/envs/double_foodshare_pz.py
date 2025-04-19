@@ -20,12 +20,12 @@ from gymnasium.core import RenderFrame
 class AgentActions:
     available = ['give_and_take', 'eat', 'protect']
     # action:
-    # 0: give_and_take
+    # 0: share
     # 1: eat
     # 2: protect
     # the priority is the order of id. so agent cannot "take" other's food if other agent is taking 'eat' or 'protect'.
 
-    give_and_take = 0
+    share = 0
     eat = 1
     protect = 2
 
@@ -59,9 +59,9 @@ class DoubleFoodShareEnvPZ(ParallelEnv):
         }
 
         # Key parameters
-        self.switch_prob = switch_prob # owner switch prob.
+        self.switch_prob = switch_prob  # owner switch prob.
         self.default_energy_loss = 0.001  # default energy loss
-        self.food_intake = 0.1  # intake of energy when food is consumed
+        self.food_intake = 0.3  # intake of energy when food is consumed
         self.reward_scale = 100.  # reward scale in the homeostatic reward
 
         # environment condition
@@ -104,8 +104,9 @@ class DoubleFoodShareEnvPZ(ParallelEnv):
         return Discrete(len(AgentActions.available))
 
     def set_agent_info(self,
-                       id_: str, energy: float,
-                       have_food: bool = False,
+                       id_: str,
+                       energy: float,
+                       have_food: bool,
                        ):
         self.agent_info[id_]["energy"] = energy
         self.agent_info[id_]["have_food"] = have_food
@@ -155,6 +156,7 @@ class DoubleFoodShareEnvPZ(ParallelEnv):
         self.prev_energy = np.array([self.agent_info[id_]["energy"] for id_ in self.possible_agents])
 
         # update trap condition
+        is_shared = False
         is_food_eaten = False
         agent0, agent1 = self.possible_agents
 
@@ -169,24 +171,32 @@ class DoubleFoodShareEnvPZ(ParallelEnv):
             if self.agent_info[agent0]["have_food"] is True:
                 self.agent_info[agent0]["energy"] += self.food_intake
                 is_food_eaten = True
+            elif self.agent_info[agent1]["have_food"] is True and action1 == AgentActions.share:
+                self.agent_info[agent0]["energy"] += self.food_intake
+                is_food_eaten = True
 
-        elif action0 == AgentActions.give_and_take:  # take dynamics: transfer food
-            if self.agent_info[agent1]["have_food"] is True and action1 == AgentActions.give_and_take:
-                self.agent_info[agent0]["have_food"] = True
-                self.agent_info[agent1]["have_food"] = False
-                # print("food transfer: 1 --> 0")
+        elif action0 == AgentActions.share:  # share dynamics: transfer food
+            if self.agent_info[agent0]["have_food"] is True:
+                self.agent_info[agent0]["have_food"] = False
+                self.agent_info[agent1]["have_food"] = True
+                is_shared = True
+                # print("food transfer: 0 --> 1")
 
         # agent 1 update
         if action1 == AgentActions.eat:  # consume food if the agent "has food"
             if self.agent_info[agent1]["have_food"] is True:
                 self.agent_info[agent1]["energy"] += self.food_intake
                 is_food_eaten = True
+            elif self.agent_info[agent0]["have_food"] is True and action0 == AgentActions.share:
+                self.agent_info[agent1]["energy"] += self.food_intake
+                is_food_eaten = True
 
-        elif action1 == AgentActions.give_and_take:   # take dynamics: transfer food
-            if self.agent_info[agent0]["have_food"] is True and action0 == AgentActions.give_and_take:
-                self.agent_info[agent0]["have_food"] = False
-                self.agent_info[agent1]["have_food"] = True
-                # print("food transfer: 0 --> 1")
+        elif action1 == AgentActions.share:  # share dynamics: transfer food
+            if self.agent_info[agent1]["have_food"] is True and is_shared is False:
+                self.agent_info[agent0]["have_food"] = True
+                self.agent_info[agent1]["have_food"] = False
+                # print("food transfer: 1 --> 0")
+                is_shared = True
 
         if is_food_eaten:
             self.generate_new_food()
@@ -197,7 +207,6 @@ class DoubleFoodShareEnvPZ(ParallelEnv):
             done = True
 
         dones = {a: done for a in self.possible_agents}
-
         truncateds = {a: False for a in self.possible_agents}
 
         rewards = self.get_reward()
