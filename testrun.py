@@ -14,7 +14,8 @@ env = gym.make(id="tiny_empathy/GridRooms-v0",
                render_mode="human",
                enable_inference=True,
                encoder_weight=enc,
-               decoder_weight=dec)
+               decoder_weight=dec,
+               set_energy_loss_partner=0.01)
 # env = gym.make(id="tiny_empathy/GridRooms-v0", render_mode="human", enable_empathy=False)
 # env = gym.make(id="tiny_empathy/FoodShare-v0", render_mode="human", enable_empathy=False)
 # env = FoodShareWrapper(env)

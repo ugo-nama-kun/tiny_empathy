@@ -22,6 +22,7 @@ class GridRoomsEnv(gym.Env):
                  enable_inference=False,
                  encoder_weight=None,
                  decoder_weight=None,
+                 set_energy_loss_partner=None,
                  ):
         self.window_size = 512
 
@@ -37,7 +38,8 @@ class GridRoomsEnv(gym.Env):
 
         # Key parameters
         self.size = size  # size of the 1D grid world
-        self.default_energy_loss = 0.003  # default energy loss
+        self.default_energy_loss_posessor = 0.003  # default energy loss
+        self.default_energy_loss_partner = 0.003 if set_energy_loss_partner is None else set_energy_loss_partner # default energy loss
         self.food_intake = 0.1  # intake of energy when food is consumed
         self.reward_scale = 100.  # reward scale in the homeostatic reward
 
@@ -144,8 +146,8 @@ class GridRoomsEnv(gym.Env):
 
         # energy update
         self.prev_energy = np.array([self.agent_info[0]["energy"], self.agent_info[1]["energy"]])
-        self.agent_info[0]["energy"] -= self.default_energy_loss
-        self.agent_info[1]["energy"] -= self.default_energy_loss
+        self.agent_info[0]["energy"] -= self.default_energy_loss_posessor
+        self.agent_info[1]["energy"] -= self.default_energy_loss_partner
 
         # possessor move
         prev_pos = self.agent_info[0]["position"]
