@@ -1,12 +1,23 @@
 from pprint import pprint
 
+import numpy as np
 import gymnasium as gym
 import tiny_empathy
 from tiny_empathy.wrappers import FoodShareWrapper
 
-env = gym.make(id="tiny_empathy/GridRooms-v0", render_mode="human", enable_empathy=False)
+enc = np.random.randn(3)
+enc = enc / np.linalg.norm(enc)
+dec = enc.copy()
+
+env = gym.make(id="tiny_empathy/GridRooms-v0",
+               size=2,
+               render_mode="human",
+               enable_inference=True,
+               encoder_weight=enc,
+               decoder_weight=dec)
+# env = gym.make(id="tiny_empathy/GridRooms-v0", render_mode="human", enable_empathy=False)
 # env = gym.make(id="tiny_empathy/FoodShare-v0", render_mode="human", enable_empathy=False)
-env = FoodShareWrapper(env)
+# env = FoodShareWrapper(env)
 
 env.reset()
 

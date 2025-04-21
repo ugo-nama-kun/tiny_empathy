@@ -58,8 +58,8 @@ class DoubleFoodShareEnvPZ(ParallelEnv):
         }
 
         # Key parameters
-        self.default_energy_loss = 0.01  # default energy loss
-        self.food_intake = 0.1  # intake of energy when food is consumed
+        self.default_energy_loss = 0.003  # default energy loss
+        self.food_intake = 0.2  # intake of energy when food is consumed
         self.reward_scale = 100.  # reward scale in the homeostatic reward
 
         # environment condition

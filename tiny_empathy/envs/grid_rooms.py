@@ -14,12 +14,26 @@ from gymnasium.core import RenderFrame
 class GridRoomsEnv(gym.Env):
     metadata = {"render_modes": ["human"], "render_fps": 30}
 
-    def __init__(self, render_mode=None, size=5, enable_empathy=False, weight_empathy=0.0):
+    def __init__(self,
+                 render_mode=None,
+                 size=5,
+                 enable_empathy=False,
+                 weight_empathy=0.0,
+                 enable_inference=False,
+                 encoder_weight=None,
+                 decoder_weight=None,
+                 ):
         self.window_size = 512
 
         # enable or remove empathy channel
         self.enable_empathy = enable_empathy
         self.weight_empathy = weight_empathy
+
+        # emotional feature experiment settings
+        self.enable_inference = enable_inference
+        self.encoder_weight = encoder_weight
+        self.decoder_weight = decoder_weight
+        # trapped agent energy --(encoder)--> emotional feature --(decoder)--> inferred energy (inferred by possessor)
 
         # Key parameters
         self.size = size  # size of the 1D grid world
@@ -33,19 +47,30 @@ class GridRoomsEnv(gym.Env):
                     "position": spaces.Discrete(self.size),
         }
 
-        if self.enable_empathy:
-            # add empathic signal in the obs dict
+        if enable_inference:
             obs_dict = spaces.Dict(
                 {
                     "energy": spaces.Box(-1, 1),
                     "have_food": spaces.Discrete(2),
                     "position": spaces.Discrete(self.size),
-                    "empathic_signal": spaces.Box(-np.inf, np.inf),  # empathy channel
+                    "emotional_feature": spaces.Box(-np.inf, np.inf, shape=(self.encoder_weight.size,)),
                 },
             )
             self.observation_space = spaces.Dict(obs_dict)
         else:
-            self.observation_space = spaces.Dict(obs_dict)
+            if self.enable_empathy:
+                # add empathic signal in the obs dict
+                obs_dict = spaces.Dict(
+                    {
+                        "energy": spaces.Box(-1, 1),
+                        "have_food": spaces.Discrete(2),
+                        "position": spaces.Discrete(self.size),
+                        "empathic_signal": spaces.Box(-np.inf, np.inf),  # empathy channel
+                    },
+                )
+                self.observation_space = spaces.Dict(obs_dict)
+            else:
+                self.observation_space = spaces.Dict(obs_dict)
 
         self.action_space = spaces.Discrete(5)
         # action:
@@ -163,15 +188,23 @@ class GridRoomsEnv(gym.Env):
         return observation_dict, rewards, done, False, info
 
     def get_obs(self):
-        obs = {
-                "energy": [self.agent_info[0]["energy"]],
-                "have_food": np.float32(np.arange(2) == int(self.agent_info[0]["have_food"])),
-                "position": np.float32(np.arange(self.size) == self.agent_info[0]["position"]),
-            }
+        if self.enable_inference:
+            obs = {
+                    "energy": [self.agent_info[0]["energy"]],
+                    "have_food": np.float32(np.arange(2) == int(self.agent_info[0]["have_food"])),
+                    "position": np.float32(np.arange(self.size) == self.agent_info[0]["position"]),
+                    "emotional_feature": self.encoder_weight * self.agent_info[1]["energy"]  # emotional feature
+                }
+        else:
+            obs = {
+                    "energy": [self.agent_info[0]["energy"]],
+                    "have_food": np.float32(np.arange(2) == int(self.agent_info[0]["have_food"])),
+                    "position": np.float32(np.arange(self.size) == self.agent_info[0]["position"]),
+                }
 
-        if self.enable_empathy:
-            # TODO: try other definition of the empathic signal
-            obs.update({"empathic_signal": [self.agent_info[1]["energy"]]})
+            if self.enable_empathy:
+                # TODO: try other definition of the empathic signal
+                obs.update({"empathic_signal": [self.agent_info[1]["energy"]]})
 
         return obs
 
@@ -184,11 +217,19 @@ class GridRoomsEnv(gym.Env):
     def get_reward(self):
         # homeostatic reward by Keramati & Gutkin 2011
         prev_drive = self.prev_energy[0] ** 2
-        prev_drive += self.weight_empathy * self.prev_energy[1] ** 2  # empathic reward term
+        if self.enable_inference:
+            inferred_energy = np.dot(self.decoder_weight.transpose(), self.encoder_weight * self.prev_energy[1])
+            prev_drive += self.weight_empathy * inferred_energy ** 2  # empathic reward term
+        else:
+            prev_drive += self.weight_empathy * self.prev_energy[1] ** 2  # empathic reward term
 
         energy_now = np.array([self.agent_info[0]["energy"], self.agent_info[1]["energy"]])
         drive_now = energy_now[0] ** 2
-        drive_now += self.weight_empathy * energy_now[1] ** 2  # empathic reward term
+        if self.enable_inference:
+            inferred_energy = np.dot(self.decoder_weight.transpose(), self.encoder_weight * energy_now[1])
+            drive_now += self.weight_empathy * inferred_energy ** 2  # empathic reward term
+        else:
+            drive_now += self.weight_empathy * energy_now[1] ** 2  # empathic reward term
 
         reward = self.reward_scale * (prev_drive - drive_now)
         return reward
