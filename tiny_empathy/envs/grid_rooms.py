@@ -49,7 +49,7 @@ class GridRoomsEnv(gym.Env):
                     "position": spaces.Discrete(self.size),
         }
 
-        if enable_inference:
+        if enable_inference and enable_empathy:
             obs_dict = spaces.Dict(
                 {
                     "energy": spaces.Box(-1, 1),
@@ -59,20 +59,19 @@ class GridRoomsEnv(gym.Env):
                 },
             )
             self.observation_space = spaces.Dict(obs_dict)
+        elif enable_empathy:
+            # add empathic signal in the obs dict
+            obs_dict = spaces.Dict(
+                {
+                    "energy": spaces.Box(-1, 1),
+                    "have_food": spaces.Discrete(2),
+                    "position": spaces.Discrete(self.size),
+                    "empathic_signal": spaces.Box(-np.inf, np.inf),  # empathy channel
+                },
+            )
+            self.observation_space = spaces.Dict(obs_dict)
         else:
-            if self.enable_empathy:
-                # add empathic signal in the obs dict
-                obs_dict = spaces.Dict(
-                    {
-                        "energy": spaces.Box(-1, 1),
-                        "have_food": spaces.Discrete(2),
-                        "position": spaces.Discrete(self.size),
-                        "empathic_signal": spaces.Box(-np.inf, np.inf),  # empathy channel
-                    },
-                )
-                self.observation_space = spaces.Dict(obs_dict)
-            else:
-                self.observation_space = spaces.Dict(obs_dict)
+            self.observation_space = spaces.Dict(obs_dict)
 
         self.action_space = spaces.Discrete(5)
         # action:
@@ -190,23 +189,16 @@ class GridRoomsEnv(gym.Env):
         return observation_dict, rewards, done, False, info
 
     def get_obs(self):
-        if self.enable_inference:
-            obs = {
-                    "energy": [self.agent_info[0]["energy"]],
-                    "have_food": np.float32(np.arange(2) == int(self.agent_info[0]["have_food"])),
-                    "position": np.float32(np.arange(self.size) == self.agent_info[0]["position"]),
-                    "emotional_feature": self.encoder_weight * self.agent_info[1]["energy"]  # emotional feature
-                }
-        else:
-            obs = {
-                    "energy": [self.agent_info[0]["energy"]],
-                    "have_food": np.float32(np.arange(2) == int(self.agent_info[0]["have_food"])),
-                    "position": np.float32(np.arange(self.size) == self.agent_info[0]["position"]),
-                }
+        obs = {
+            "energy": [self.agent_info[0]["energy"]],
+            "have_food": np.float32(np.arange(2) == int(self.agent_info[0]["have_food"])),
+            "position": np.float32(np.arange(self.size) == self.agent_info[0]["position"]),
+        }
 
-            if self.enable_empathy:
-                # TODO: try other definition of the empathic signal
-                obs.update({"empathic_signal": [self.agent_info[1]["energy"]]})
+        if self.enable_inference and self.enable_empathy:  # inference
+            obs.update({"emotional_feature": self.encoder_weight * self.agent_info[1]["energy"]})
+        elif self.enable_empathy:  # direct pass
+            obs.update({"empathic_signal": [self.agent_info[1]["energy"]]})
 
         return obs
 
