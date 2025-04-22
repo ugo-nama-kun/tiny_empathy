@@ -34,7 +34,7 @@ class GridRoomsEnv(gym.Env):
         self.enable_inference = enable_inference
         self.encoder_weight = encoder_weight
         self.decoder_weight = decoder_weight
-        self.size_emotional_feature = encoder_weight.size
+        self.size_emotional_feature = encoder_weight.size if encoder_weight is not None else None
         # trapped agent energy --(encoder)--> emotional feature --(decoder)--> inferred energy (inferred by possessor)
 
         # Key parameters
