@@ -47,7 +47,7 @@ class TrapEnvPZ(ParallelEnv):
             render_mode=None,
             cognitive_empathy=False,
             weight_affective_empathy=0.0,
-            p_trap=0.0005
+            p_trap=0.002
     ):
         self.window_size = 512
         agents_index = [0, 1]
