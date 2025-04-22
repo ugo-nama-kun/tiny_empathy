@@ -136,6 +136,7 @@ class GridRoomsEnv(gym.Env):
         self.prev_energy = np.array([self.agent_info[0]["energy"], self.agent_info[1]["energy"]])
 
         observation = self.get_obs()
+        # print(observation)
         info = self.get_info()
 
         return observation, info
@@ -213,10 +214,11 @@ class GridRoomsEnv(gym.Env):
         # homeostatic reward by Keramati & Gutkin 2011
         prev_drive = self.prev_energy[0] ** 2
         if self.enable_inference:
-            inferred_energy = np.dot(self.decoder_weight.transpose(), self.encoder_weight * self.prev_energy[1])
-            prev_drive += self.weight_empathy * inferred_energy ** 2  # empathic reward term
+            inferred_energy_prev = np.dot(self.decoder_weight.transpose(), self.encoder_weight * self.prev_energy[1])
+            prev_drive += self.weight_empathy * inferred_energy_prev ** 2  # empathic reward term
         else:
             prev_drive += self.weight_empathy * self.prev_energy[1] ** 2  # empathic reward term
+        # print(inferred_energy_prev, self.prev_energy[1])
 
         energy_now = np.array([self.agent_info[0]["energy"], self.agent_info[1]["energy"]])
         drive_now = energy_now[0] ** 2
@@ -225,6 +227,7 @@ class GridRoomsEnv(gym.Env):
             drive_now += self.weight_empathy * inferred_energy ** 2  # empathic reward term
         else:
             drive_now += self.weight_empathy * energy_now[1] ** 2  # empathic reward term
+        # print(inferred_energy, energy_now[1])
 
         reward = self.reward_scale * (prev_drive - drive_now)
         return reward
@@ -350,3 +353,25 @@ class GridRoomsEnv(gym.Env):
         if self.window is not None:
             pygame.display.quit()
             pygame.quit()
+
+
+if __name__ == '__main__':
+    enc = np.ones((1,))#np.random.randn(5)
+    enc /= np.linalg.norm(enc)
+    dec = enc.copy()
+
+    env = GridRoomsEnv(render_mode="human", enable_empathy=True, enable_inference=True, encoder_weight=enc, decoder_weight=dec)
+    env.reset()
+
+    for i in range(1000):
+        actions = env.action_space.sample()
+        print(actions)
+        obs, reward, done, truncate, info = env.step(actions)
+        env.render()
+        print("obs:", obs)
+        print(info)
+        # print("reward:", reward)
+        # print(f"done, truncate, info: {done}, {truncate}, {info}")
+
+    env.close()
+    print("finish.")

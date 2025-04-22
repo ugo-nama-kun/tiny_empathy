@@ -441,6 +441,7 @@ class TrapEnvPZ(ParallelEnv):
             pygame.display.quit()
             pygame.quit()
 
+
 if __name__ == '__main__':
     env = TrapEnvPZ(render_mode="human")
     env.reset()
