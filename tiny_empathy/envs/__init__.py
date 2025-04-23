@@ -3,3 +3,5 @@ from tiny_empathy.envs.foodshare import FoodShareEnv
 from tiny_empathy.envs.trap import TrapEnv
 from tiny_empathy.envs.trap_pz import TrapEnvPZ
 from tiny_empathy.envs.double_foodshare_pz import DoubleFoodShareEnvPZ
+from tiny_empathy.envs.grid_rooms_decoder_learning import GridRoomsDecoderLearningEnv
+from tiny_empathy.envs.foodshare_decoder_learning import FoodShareDecoderLearningEnv

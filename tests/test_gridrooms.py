@@ -1,9 +1,9 @@
 import pytest
 
-from tiny_empathy.envs import GridRoomsEnv
+from tiny_empathy.envs import GridRoomsDecoderLearningEnv
 
 
 def test_make_env():
-    GridRoomsEnv()
+    GridRoomsDecoderLearningEnv()
 
 
