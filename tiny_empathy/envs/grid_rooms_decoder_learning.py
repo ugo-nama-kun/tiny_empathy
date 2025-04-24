@@ -47,9 +47,9 @@ class GridRoomsDecoderLearningEnv(gym.Env):
         self.reward_scale = 100.  # reward scale in the homeostatic reward
 
         """ dimensions: energy=1, have_food=1, position=env.size, emotional_featire=dim_emotional_feature"""
-        dim_obs = 3 + env.size
+        dim_obs = 3 + size
         if env.decoding_mode == "affect":
-            dim_obs += env.dim_emotional_feature
+            dim_obs += dim_emotional_feature
         elif env.decoding_mode == "full":
             dim_obs += 1
         else:
