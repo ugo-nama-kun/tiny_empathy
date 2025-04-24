@@ -48,12 +48,12 @@ class GridRoomsDecoderLearningEnv(gym.Env):
 
         """ dimensions: energy=1, have_food=1, position=env.size, emotional_featire=dim_emotional_feature"""
         dim_obs = 3 + size
-        if env.decoding_mode == "affect":
+        if decoding_mode == "affect":
             dim_obs += dim_emotional_feature
-        elif env.decoding_mode == "full":
+        elif decoding_mode == "full":
             dim_obs += 1
         else:
-            raise ValueError(f"Invalid decoding mode. {env.decoding_mode}")
+            raise ValueError(f"Invalid decoding mode. {decoding_mode}")
 
         ub = np.ones(dim_obs, dtype=np.float32)
         self.observation_space = gym.spaces.Box(ub * -1, ub)
