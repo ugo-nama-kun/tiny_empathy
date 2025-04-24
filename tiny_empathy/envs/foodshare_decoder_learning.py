@@ -52,7 +52,7 @@ class FoodShareDecoderLearningEnv(gym.Env):
 
         dim_obs = 1
         if self.decoding_mode == "affect":
-            dim_obs += env.dim_emotional_feature
+            dim_obs += dim_emotional_feature
         elif self.decoding_mode == "full":
             dim_obs += 1
         else:
