@@ -1,4 +1,4 @@
 from tiny_empathy.wrappers.foodshare import FoodShareWrapper
 from tiny_empathy.wrappers.grid_rooms import GridRoomsWrapper
-from tiny_empathy.wrappers.foodshare_decoder_learning import FoodShareDecoderLearningEnv
+from tiny_empathy.wrappers.foodshare_decoder_learning import FoodShareDecoderLearningWrapper
 from tiny_empathy.wrappers.grid_rooms_decoder_learning import GridRoomsDecoderLearningWrapper

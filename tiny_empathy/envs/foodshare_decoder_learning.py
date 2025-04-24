@@ -33,7 +33,7 @@ class FoodShareDecoderLearningEnv(gym.Env):
         # cognitive empathy by default
         self.weight_empathy = weight_empathy
 
-        assert decoding_mode in {"affect", "full"}, "Invalid decoding mode. decoding mode is affect or full."
+        assert decoding_mode in {"affect", "full"}, f"Invalid decoding mode. decoding mode is affect or full.: {decoding_mode}"
         self.decoding_mode = decoding_mode
 
         # emotional feature experiment settings (bodily encoding of the internal state)
@@ -363,9 +363,10 @@ if __name__ == '__main__':
     env = FoodShareDecoderLearningEnv(
         render_mode="human",
         dim_emotional_feature=3,
-        decoding_mode="affect",
+        decoding_mode="full",
         emotional_encoder=enc,
     )
+
     env.reset(emotional_decoder=dec)
 
     for i in range(1000):
@@ -373,7 +374,7 @@ if __name__ == '__main__':
         print(actions)
         obs, reward, done, truncate, info = env.step(actions, emotional_decoder=dec)
         env.render()
-        print("obs:", obs)
+        print("obs:", env.encode_obs(obs))
         print(info)
         # print("reward:", reward)
         # print(f"done, truncate, info: {done}, {truncate}, {info}")

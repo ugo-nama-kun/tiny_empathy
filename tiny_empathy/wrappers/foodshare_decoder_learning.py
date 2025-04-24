@@ -1,15 +1,9 @@
-from typing import SupportsFloat, Any, Union
-
 import gymnasium as gym
 import numpy as np
-import torch
-from gymnasium.core import ActType, WrapperObsType
-
-from tiny_empathy.envs import FoodShareDecoderLearningEnv
 
 
 class FoodShareDecoderLearningWrapper(gym.ObservationWrapper):
-    def __init__(self, env: Union[FoodShareDecoderLearningEnv, gym.Env]):
+    def __init__(self, env):
         """
 
         :param env: environment to learn
@@ -41,4 +35,3 @@ class FoodShareDecoderLearningWrapper(gym.ObservationWrapper):
 
     def observation(self, observation):
         return self.env.encode_obs(observation)
-
