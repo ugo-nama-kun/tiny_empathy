@@ -50,13 +50,16 @@ class FoodShareDecoderLearningEnv(gym.Env):
         self.prob_low_energy = 0.1  # prob of flipping the energy level to low
         self.reward_scale = 1.  # reward scale in the homeostatic reward
 
-        obs_dict = spaces.Dict(
-            {
-                "energy": spaces.Discrete(2),
-                "emotional_feature": spaces.Box(-np.inf, np.inf, shape=(dim_emotional_feature,)),
-            }
-        )
-        self.observation_space = spaces.Dict(obs_dict)
+        dim_obs = 1
+        if self.decoding_mode == "affect":
+            dim_obs += env.dim_emotional_feature
+        elif self.decoding_mode == "full":
+            dim_obs += 1
+        else:
+            raise ValueError(f"Invalid decoding mode. {env.decoding_mode}")
+
+        ub = np.ones(dim_obs, dtype=np.float32)
+        self.observation_space = gym.spaces.Box(ub * -1, ub)
 
         self.action_space = spaces.Discrete(2)  # pass or eat
         # action:
@@ -116,7 +119,7 @@ class FoodShareDecoderLearningEnv(gym.Env):
         observation = self.get_obs(emotional_decoder)
         info = self.get_info()
 
-        return observation, info
+        return self.encode_obs(observation), info
 
     def step(self, action, emotional_decoder=None):
         assert emotional_decoder is not None
@@ -165,7 +168,7 @@ class FoodShareDecoderLearningEnv(gym.Env):
         if self._step > self.max_episode_steps:
             done = True
 
-        return observation_dict, rewards, done, False, info
+        return self.encode_obs(observation_dict), rewards, done, False, info
 
     def get_obs(self, emotional_decoder):
         obs = {"energy": np.array([self.agent_info[0]["energy"]])}

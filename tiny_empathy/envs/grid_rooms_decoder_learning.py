@@ -46,15 +46,17 @@ class GridRoomsDecoderLearningEnv(gym.Env):
         self.food_intake = 0.1  # intake of energy when food is consumed
         self.reward_scale = 100.  # reward scale in the homeostatic reward
 
-        obs_dict = spaces.Dict(
-            {
-                "energy": spaces.Box(-1, 1),
-                "have_food": spaces.Discrete(2),
-                "position": spaces.Discrete(self.size),
-                "emotional_feature": spaces.Box(-np.inf, np.inf, shape=(dim_emotional_feature,)),
-            },
-        )
-        self.observation_space = spaces.Dict(obs_dict)
+        """ dimensions: energy=1, have_food=1, position=env.size, emotional_featire=dim_emotional_feature"""
+        dim_obs = 3 + env.size
+        if env.decoding_mode == "affect":
+            dim_obs += env.dim_emotional_feature
+        elif env.decoding_mode == "full":
+            dim_obs += 1
+        else:
+            raise ValueError(f"Invalid decoding mode. {env.decoding_mode}")
+
+        ub = np.ones(dim_obs, dtype=np.float32)
+        self.observation_space = gym.spaces.Box(ub * -1, ub)
 
         self.action_space = spaces.Discrete(5)
         # action:
@@ -126,7 +128,7 @@ class GridRoomsDecoderLearningEnv(gym.Env):
         # print(observation)
         info = self.get_info()
 
-        return observation, info
+        return self.encode_obs(observation), info
 
     def step(self, action, emotional_decoder=None):
         assert emotional_decoder is not None
@@ -178,7 +180,7 @@ class GridRoomsDecoderLearningEnv(gym.Env):
         if self._step > self.max_episode_steps:
             done = True
 
-        return observation_dict, rewards, done, False, info
+        return self.encode_obs(observation_dict), rewards, done, False, info
 
     def get_obs(self, emotional_decoder):
         with torch.no_grad():
