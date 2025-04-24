@@ -89,7 +89,7 @@ class GridRoomsDecoderLearningEnv(gym.Env):
         }
 
         self._step = 0
-        self.max_episode_steps = 2000
+        self.max_episode_steps = 3000
         self.prev_energy = np.array([v["energy"] for k, v in self.agent_info.items()])
 
     def set_agent_info(self, id_: int, energy: float, have_food: bool = False, position: int = 0):
