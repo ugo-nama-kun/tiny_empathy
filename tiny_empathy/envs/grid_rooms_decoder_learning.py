@@ -185,7 +185,12 @@ class GridRoomsDecoderLearningEnv(gym.Env):
         return self.encode_obs(observation_dict), rewards, done, False, info
 
     def get_obs(self, emotional_decoder):
-        emotional_feature = None
+        obs = {
+            "energy": [self.agent_info[0]["energy"]],
+            "have_food": np.float32(np.arange(2) == int(self.agent_info[0]["have_food"])),
+            "position": np.float32(np.arange(self.size) == self.agent_info[0]["position"]),
+        }
+
         with torch.no_grad():
             s = torch.FloatTensor([self.agent_info[1]["energy"]])
             if self.enable_empathy:
@@ -196,12 +201,7 @@ class GridRoomsDecoderLearningEnv(gym.Env):
                 else:
                     raise ValueError(f"decoding mode is invalid: {self.decoding_mode}")
 
-        obs = {
-            "energy": [self.agent_info[0]["energy"]],
-            "have_food": np.float32(np.arange(2) == int(self.agent_info[0]["have_food"])),
-            "position": np.float32(np.arange(self.size) == self.agent_info[0]["position"]),
-            "emotional_feature": emotional_feature
-        }
+            obs["emotional_feature"] = emotional_feature
 
         return obs
 
