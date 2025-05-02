@@ -191,16 +191,15 @@ class GridRoomsDecoderLearningEnv(gym.Env):
             "position": np.float32(np.arange(self.size) == self.agent_info[0]["position"]),
         }
 
-        with torch.no_grad():
-            s = torch.FloatTensor([self.agent_info[1]["energy"]])
-            if self.enable_empathy:
+        if self.enable_empathy:
+            with torch.no_grad():
+                s = torch.FloatTensor([self.agent_info[1]["energy"]])
                 if self.decoding_mode == "full":
                     emotional_feature = emotional_decoder(self.emotional_encoder(s)).cpu().numpy()
                 elif self.decoding_mode == "affect":
                     emotional_feature = self.emotional_encoder(s).cpu().numpy()
                 else:
                     raise ValueError(f"decoding mode is invalid: {self.decoding_mode}")
-
             obs["emotional_feature"] = emotional_feature
 
         return obs
