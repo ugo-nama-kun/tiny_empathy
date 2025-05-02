@@ -185,6 +185,7 @@ class GridRoomsDecoderLearningEnv(gym.Env):
         return self.encode_obs(observation_dict), rewards, done, False, info
 
     def get_obs(self, emotional_decoder):
+        emotional_feature = None
         with torch.no_grad():
             s = torch.FloatTensor([self.agent_info[1]["energy"]])
             if self.enable_empathy:
