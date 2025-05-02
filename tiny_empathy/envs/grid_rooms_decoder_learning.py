@@ -20,6 +20,7 @@ class GridRoomsDecoderLearningEnv(gym.Env):
                  size=5,
                  weight_empathy=0.0,
                  dim_emotional_feature=5,
+                 enable_empathy=True,  # enabling cognitive empathy
                  emotional_encoder=None,  # assuming a pytorch model
                  set_energy_loss_partner=None,
                  decoding_mode=None,  # "affect" or "full"
@@ -28,7 +29,7 @@ class GridRoomsDecoderLearningEnv(gym.Env):
 
         # enable or remove empathy channel
         self.dim_emotional_feature = dim_emotional_feature
-        # cognitive empathy by default
+        self.enable_empathy = enable_empathy
         self.weight_empathy = weight_empathy
 
         assert decoding_mode in {"affect", "full"}, "Invalid decoding mode. decoding mode is affect or full."
@@ -48,12 +49,13 @@ class GridRoomsDecoderLearningEnv(gym.Env):
 
         """ dimensions: energy=1, have_food=1, position=env.size, emotional_featire=dim_emotional_feature"""
         dim_obs = 3 + size
-        if decoding_mode == "affect":
-            dim_obs += dim_emotional_feature
-        elif decoding_mode == "full":
-            dim_obs += 1
-        else:
-            raise ValueError(f"Invalid decoding mode. {decoding_mode}")
+        if self.enable_empathy is True:
+            if decoding_mode == "affect":
+                dim_obs += dim_emotional_feature
+            elif decoding_mode == "full":
+                dim_obs += 1
+            else:
+                raise ValueError(f"Invalid decoding mode. {decoding_mode}")
 
         ub = np.ones(dim_obs, dtype=np.float32)
         self.observation_space = gym.spaces.Box(ub * -1, ub)
@@ -185,12 +187,13 @@ class GridRoomsDecoderLearningEnv(gym.Env):
     def get_obs(self, emotional_decoder):
         with torch.no_grad():
             s = torch.FloatTensor([self.agent_info[1]["energy"]])
-            if self.decoding_mode == "full":
-                emotional_feature = emotional_decoder(self.emotional_encoder(s)).cpu().numpy()
-            elif self.decoding_mode == "affect":
-                emotional_feature = self.emotional_encoder(s).cpu().numpy()
-            else:
-                raise ValueError(f"decoding mode is invalid: {self.decoding_mode}")
+            if self.enable_empathy:
+                if self.decoding_mode == "full":
+                    emotional_feature = emotional_decoder(self.emotional_encoder(s)).cpu().numpy()
+                elif self.decoding_mode == "affect":
+                    emotional_feature = self.emotional_encoder(s).cpu().numpy()
+                else:
+                    raise ValueError(f"decoding mode is invalid: {self.decoding_mode}")
 
         obs = {
             "energy": [self.agent_info[0]["energy"]],

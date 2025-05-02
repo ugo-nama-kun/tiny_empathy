@@ -17,7 +17,7 @@ class FoodShareEnv(gym.Env):
     def __init__(self,
                  emotional_feature=False,
                  render_mode=None,
-                 enable_empathy=False,
+                 enable_empathy=False,  # enabling cognitive empathy
                  weight_empathy=0.0,
                  feed_success=1.0):
         self.window_size = 512
