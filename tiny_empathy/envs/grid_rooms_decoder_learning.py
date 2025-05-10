@@ -23,7 +23,7 @@ class GridRoomsDecoderLearningEnv(gym.Env):
                  enable_empathy=True,  # enabling cognitive empathy
                  emotional_encoder=None,  # assuming a pytorch model
                  set_energy_loss_partner=None,
-                 decoding_mode=None,  # "affect" or "full"
+                 decoding_mode=None,  # "A" or "B"
                  ):
         self.window_size = 512
 
@@ -32,7 +32,7 @@ class GridRoomsDecoderLearningEnv(gym.Env):
         self.enable_empathy = enable_empathy
         self.weight_empathy = weight_empathy
 
-        assert decoding_mode in {"affect", "full"}, "Invalid decoding mode. decoding mode is affect or full."
+        assert decoding_mode in {"A", "B"}, "Invalid decoding mode. decoding mode is A or B."
         self.decoding_mode = decoding_mode
 
         # emotional feature experiment settings (bodily encoding of the internal state)
@@ -50,9 +50,9 @@ class GridRoomsDecoderLearningEnv(gym.Env):
         """ dimensions: energy=1, have_food=1, position=env.size, emotional_featire=dim_emotional_feature"""
         dim_obs = 3 + size
         if self.enable_empathy is True:
-            if decoding_mode == "affect":
+            if decoding_mode == "A":
                 dim_obs += dim_emotional_feature
-            elif decoding_mode == "full":
+            elif decoding_mode == "B":
                 dim_obs += 1
             else:
                 raise ValueError(f"Invalid decoding mode. {decoding_mode}")
@@ -194,9 +194,9 @@ class GridRoomsDecoderLearningEnv(gym.Env):
         if self.enable_empathy:
             with torch.no_grad():
                 s = torch.FloatTensor([self.agent_info[1]["energy"]])
-                if self.decoding_mode == "full":
+                if self.decoding_mode == "B":
                     emotional_feature = emotional_decoder(self.emotional_encoder(s)).cpu().numpy()
-                elif self.decoding_mode == "affect":
+                elif self.decoding_mode == "A":
                     emotional_feature = self.emotional_encoder(s).cpu().numpy()
                 else:
                     raise ValueError(f"decoding mode is invalid: {self.decoding_mode}")
@@ -376,7 +376,7 @@ if __name__ == '__main__':
     env = GridRoomsDecoderLearningEnv(
         render_mode="human",
         dim_emotional_feature=3,
-        decoding_mode="full",
+        decoding_mode="B",
         emotional_encoder=enc,
     )
     env.reset(emotional_decoder=dec)
